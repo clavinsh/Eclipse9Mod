@@ -3,6 +3,7 @@ using R2API;
 using R2API.Utils;
 using RoR2;
 using System;
+using System.Linq;
 using System.Security.Permissions;
 
 
@@ -23,10 +24,15 @@ namespace ExamplePlugin
         public const string PluginName = "ExamplePlugin";
         public const string PluginVersion = "1.0.0";
 
+
+        private const string PermanentCurseDebuffInternalName = "PermanentCurse";
+
         public static DifficultyIndex myIndex;
+
 
         public void Awake()
         {
+            Logger.LogMessage("TESTING 123 my mod supposedly loaded");
 
             DifficultyDef myDef = new(
             10f, //This is the scaling factor, and decides how quickly the difficulty ramps up. drizzle is 1, rainstorm=2, monsoon=3.
@@ -61,17 +67,47 @@ namespace ExamplePlugin
                 }
             };
 
-            SceneDirector.onPreGeneratePlayerSpawnPointsServer += GlobalEventManager_onPreGeneratePlayerSpawnPointsServer;
 
-            Run.instance.
+
+
+
+
+            //SceneDirector.onPreGeneratePlayerSpawnPointsServer += GlobalEventManager_onPreGeneratePlayerSpawnPointsServer;
+
+
+            // players are advancing to the next stage 
+            On.RoR2.Stage.BeginAdvanceStage += (orig, self, stage) => {
+
+                Logger.LogMessage("hooked the BeginAdvanceStage function, players are advancing to the next stage");
+
+                foreach (var localUser in LocalUserManager.localUsersList)
+                {
+                    localUser.cachedBody.GetBuffCount(BuffCatalog.FindBuffIndex(PermanentCurseDebuffInternalName));
+
+                    localUser.cachedBody.ontake
+                }
+
+
+
+                
+
+                //foreach (var charBody in CharacterBody.instancesList)
+                //{
+                //    if (charBody.isPlayerControlled)
+                //    {
+                //        //charBody.activeBuffsList.Select(buff => buff.)
+
+                //        //charBody.activeBuffsList.sel
+
+                //        var lessgo = charBody.activeBuffsList.Select(buffIndex => BuffCatalog.GetBuffDef(buffIndex) == RoR2Content.Buffs.PermanentCurse);
+
+                //        Logger.LogMessage(charBody.activeBuffsList);
+
+                //    }
+                //}
+
+                orig(self, stage);
+            };
         }
-
-        private void GlobalEventManager_onPreGeneratePlayerSpawnPointsServer(SceneDirector sceneDirector, ref Action generationMethod)
-        {
-            ChatMessage.Send("player spawnpoint event triggered");
-
-            throw new NotImplementedException();
-        }
-
     }
 }
