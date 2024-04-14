@@ -69,45 +69,13 @@ namespace ExamplePlugin
 
 
 
+        }
+
+        private void Stage_Start(On.RoR2.Stage.orig_Start orig, Stage self)
+        {
 
 
-
-            //SceneDirector.onPreGeneratePlayerSpawnPointsServer += GlobalEventManager_onPreGeneratePlayerSpawnPointsServer;
-
-
-            // players are advancing to the next stage 
-            On.RoR2.Stage.BeginAdvanceStage += (orig, self, stage) => {
-
-                Logger.LogMessage("hooked the BeginAdvanceStage function, players are advancing to the next stage");
-
-                foreach (var localUser in LocalUserManager.localUsersList)
-                {
-                    localUser.cachedBody.GetBuffCount(BuffCatalog.FindBuffIndex(PermanentCurseDebuffInternalName));
-
-                    localUser.cachedBody.ontake
-                }
-
-
-
-                
-
-                //foreach (var charBody in CharacterBody.instancesList)
-                //{
-                //    if (charBody.isPlayerControlled)
-                //    {
-                //        //charBody.activeBuffsList.Select(buff => buff.)
-
-                //        //charBody.activeBuffsList.sel
-
-                //        var lessgo = charBody.activeBuffsList.Select(buffIndex => BuffCatalog.GetBuffDef(buffIndex) == RoR2Content.Buffs.PermanentCurse);
-
-                //        Logger.LogMessage(charBody.activeBuffsList);
-
-                //    }
-                //}
-
-                orig(self, stage);
-            };
+            orig(self);
         }
     }
 }
