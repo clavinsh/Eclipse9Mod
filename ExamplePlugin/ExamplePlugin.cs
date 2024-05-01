@@ -14,7 +14,7 @@ namespace ExamplePlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "hoozy";
-        public const string PluginName = "PersistentDebuffMod";
+        public const string PluginName = "ExamplePlugin";
         public const string PluginVersion = "1.0.0";
 
         private readonly DebuffPersister persister;
@@ -22,7 +22,6 @@ namespace ExamplePlugin
         public void Awake()
         {
             RoR2.Stage.onStageStartGlobal += Stage_onStageStartGlobal;
-            //On.RoR2.Run.BeginStage += Run_BeginStage;
             On.RoR2.Run.AdvanceStage += Run_AdvanceStage;
         }
 
