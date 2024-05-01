@@ -29,18 +29,31 @@ namespace ExamplePlugin
 
             Logger.LogMessage($"Mod loaded yipee v2");
 
-            On.RoR2.Run.Start += Run_Start;
+
+            RoR2.Run.onRunStartGlobal += Run_onRunStartGlobal;
+
             On.RoR2.Run.BeginStage += Run_BeginStage;
             On.RoR2.Run.EndStage += Run_EndStage;
 
+            On.RoR2.Run.AdvanceStage += Run_AdvanceStage;
+
             Logger.LogMessage($"Awake completed, hopefully");
+        }
+
+        private void Run_AdvanceStage(On.RoR2.Run.orig_AdvanceStage orig, Run self, SceneDef nextScene)
+        {
+            Logger.LogMessage($"Run_AdvanceStage");
+        }
+
+        private void Run_onRunStartGlobal(Run obj)
+        {
+            Logger.LogMessage($"Run_onRunStartGlobal");
         }
 
         private void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
         {
             Logger.LogMessage($"Run_Start function executed");
             orig(self);
-
 
             // initialize curse stacks for each player of this run
             var playerInstances = PlayerCharacterMasterController.instances;
