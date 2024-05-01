@@ -17,8 +17,7 @@ namespace ExamplePlugin
         public const string PluginName = "PersistentDebuffMod";
         public const string PluginVersion = "1.0.0";
 
-        private List<int> curseStacks = [];
-        private DebuffPersister persister;
+        private readonly DebuffPersister persister;
 
         public void Awake()
         {
