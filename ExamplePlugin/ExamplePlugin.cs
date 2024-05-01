@@ -27,6 +27,7 @@ namespace ExamplePlugin
 
         public void Awake()
         {
+            Log.Init(Logger);
             Logger.LogMessage($"Mod loaded yipee");
 
             On.RoR2.Run.Start += Run_Start;
