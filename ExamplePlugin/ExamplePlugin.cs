@@ -21,25 +21,25 @@ namespace ExamplePlugin
         public const string PluginName = "PersistentDebuffMod";
         public const string PluginVersion = "1.0.0";
 
-        private List<int> curseStacks = new();
-
-        ReadOnlyCollection<PlayerCharacterMasterController> runInstances;
+        private List<int> curseStacks = [];
 
         public void Awake()
         {
             Log.Init(Logger);
-            Logger.LogMessage($"Mod loaded yipee");
+
+            Logger.LogMessage($"Mod loaded yipee v2");
 
             On.RoR2.Run.Start += Run_Start;
             On.RoR2.Run.BeginStage += Run_BeginStage;
             On.RoR2.Run.EndStage += Run_EndStage;
+
+            Logger.LogMessage($"Awake completed, hopefully");
         }
 
         private void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
         {
             Logger.LogMessage($"Run_Start function executed");
             orig(self);
-
 
 
             // initialize curse stacks for each player of this run
