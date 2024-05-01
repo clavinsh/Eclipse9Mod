@@ -3,58 +3,70 @@ using R2API;
 using R2API.Utils;
 using RoR2;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Security.Permissions;
 using UnityEngine;
 
-
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
 namespace ExamplePlugin
 {
-    [BepInDependency(LanguageAPI.PluginGUID)]
+    [BepInDependency("com.bepis.r2api")]
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     public class ExamplePlugin : BaseUnityPlugin
     {
-        // The Plugin GUID should be a unique ID for this plugin,
-        // which is human readable (as it is used in places like the config).
-        // If we see this PluginGUID as it is on thunderstore,
-        // we will deprecate this mod.
-        // Change the PluginAuthor and the PluginName !
         public const string PluginGUID = PluginAuthor + "." + PluginName;
-        public const string PluginAuthor = "AuthorName";
-        public const string PluginName = "ExamplePlugin";
+        public const string PluginAuthor = "hoozy";
+        public const string PluginName = "PersistentDebuffMod";
         public const string PluginVersion = "1.0.0";
 
+        private List<int> curseStacks = new();
 
-        private const string PermanentCurseDeBuffInternalName = "PermanentCurse";
-
-        public static DifficultyIndex myIndex;
-
-
-        private int curseStacks = 0;
-
+        ReadOnlyCollection<PlayerCharacterMasterController> runInstances;
 
         public void Awake()
         {
-            Logger.LogMessage("TESTING 123 my mod supposedly loaded");
+            Logger.LogMessage($"Mod loaded yipee");
+
+            On.RoR2.Run.Start += Run_Start;
+            On.RoR2.Run.BeginStage += Run_BeginStage;
+            On.RoR2.Run.EndStage += Run_EndStage;
         }
 
-        public void Update()
+        private void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
         {
-            // save permanent curse stacks
-            if(Input.GetKeyDown(KeyCode.F2))
-            {
-                curseStacks = PlayerCharacterMasterController.instances[0].body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex);
+            orig(self);
 
-                Logger.LogMessage($"{curseStacks} Permanent Curse stacks saved");
+            // initialize curse stacks for each player of this run
+            var playerInstances = PlayerCharacterMasterController.instances;
+            curseStacks = playerInstances.Select(p => p.body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex)).ToList();
+            Logger.LogMessage($"Run started, there are {playerInstances.Count} player(-s) playing");
+        }
+
+        private void Run_EndStage(On.RoR2.Run.orig_EndStage orig, Run self)
+        {
+
+            // save the gathered curse stacks at the end of the run
+            curseStacks = PlayerCharacterMasterController.instances.Select(p => p.body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex)).ToList();
+
+            for (int i = 0; i < curseStacks.Count; i++)
+            {
+                Logger.LogMessage($"Saved {curseStacks[i]} Permanent Curse stacks at end of stage for player {i}");
             }
 
-            // load saved permanent curse stacks
-            if (Input.GetKeyDown(KeyCode.F3))
-            {
-                PlayerCharacterMasterController.instances[0].body.SetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex, curseStacks);
+            orig(self);
+        }
 
-                Logger.LogMessage($"{curseStacks} Permanent Curse applied to player");
+        private void Run_BeginStage(On.RoR2.Run.orig_BeginStage orig, Run self)
+        {
+            orig(self);
+
+            for (int i = 0; i < curseStacks.Count; i++)
+            {
+                PlayerCharacterMasterController.instances[i].body.SetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex, curseStacks[i]);
+
+                Logger.LogMessage($"Set {curseStacks[i]} Permanent Curse stacks at the start of stage for player {i}");
             }
         }
     }
