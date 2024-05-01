@@ -21,10 +21,14 @@ namespace ExamplePlugin
 
         public void Awake()
         {
-            Log.Init(Logger);
-
-            On.RoR2.Run.BeginStage += Run_BeginStage;
+            RoR2.Stage.onStageStartGlobal += Stage_onStageStartGlobal;
+            //On.RoR2.Run.BeginStage += Run_BeginStage;
             On.RoR2.Run.AdvanceStage += Run_AdvanceStage;
+        }
+
+        private void Stage_onStageStartGlobal(Stage obj)
+        {
+            persister.SetStacks(PlayerCharacterMasterController.instances);
         }
 
         private void Run_BeginStage(On.RoR2.Run.orig_BeginStage orig, Run self)
