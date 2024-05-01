@@ -36,7 +36,10 @@ namespace ExamplePlugin
 
         private void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
         {
+            Logger.LogMessage($"Run_Start function executed");
             orig(self);
+
+
 
             // initialize curse stacks for each player of this run
             var playerInstances = PlayerCharacterMasterController.instances;
@@ -46,7 +49,7 @@ namespace ExamplePlugin
 
         private void Run_EndStage(On.RoR2.Run.orig_EndStage orig, Run self)
         {
-
+            Logger.LogMessage($"Run_EndStage function executed");
             // save the gathered curse stacks at the end of the run
             curseStacks = PlayerCharacterMasterController.instances.Select(p => p.body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex)).ToList();
 
@@ -60,7 +63,9 @@ namespace ExamplePlugin
 
         private void Run_BeginStage(On.RoR2.Run.orig_BeginStage orig, Run self)
         {
+            Logger.LogMessage($"Run_BeginStage function executed");
             orig(self);
+
 
             for (int i = 0; i < curseStacks.Count; i++)
             {
