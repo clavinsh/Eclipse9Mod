@@ -24,28 +24,8 @@ namespace ExamplePlugin
         {
             Log.Init(Logger);
 
-            //RoR2.Run.onRunStartGlobal += Run_onRunStartGlobal;
-
             On.RoR2.Run.BeginStage += Run_BeginStage;
             On.RoR2.Run.AdvanceStage += Run_AdvanceStage;
-        }
-
-        private void Run_onRunStartGlobal(Run obj)
-        {
-            Logger.LogMessage($"Run_onRunStartGlobal");
-
-            try
-            {
-                // initialize curse stacks for each player of this run
-                curseStacks = PlayerCharacterMasterController.instances.Select(p => p.body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex)).ToList();
-                Logger.LogMessage($"Run started, there are {PlayerCharacterMasterController.instances.Count} player(-s) playing");
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-                throw e;
-            }
-
         }
 
         private void Run_BeginStage(On.RoR2.Run.orig_BeginStage orig, Run self)
