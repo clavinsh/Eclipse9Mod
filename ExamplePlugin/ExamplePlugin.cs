@@ -27,52 +27,25 @@ namespace ExamplePlugin
         {
             Log.Init(Logger);
 
-            Logger.LogMessage($"Mod loaded yipee v2");
-
-
             RoR2.Run.onRunStartGlobal += Run_onRunStartGlobal;
-
             On.RoR2.Run.BeginStage += Run_BeginStage;
-            On.RoR2.Run.EndStage += Run_EndStage;
-
             On.RoR2.Run.AdvanceStage += Run_AdvanceStage;
-
-            Logger.LogMessage($"Awake completed, hopefully");
-        }
-
-        private void Run_AdvanceStage(On.RoR2.Run.orig_AdvanceStage orig, Run self, SceneDef nextScene)
-        {
-            Logger.LogMessage($"Run_AdvanceStage");
         }
 
         private void Run_onRunStartGlobal(Run obj)
         {
             Logger.LogMessage($"Run_onRunStartGlobal");
-        }
 
-        private void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
-        {
-            Logger.LogMessage($"Run_Start function executed");
-            orig(self);
-
-            // initialize curse stacks for each player of this run
-            var playerInstances = PlayerCharacterMasterController.instances;
-            curseStacks = playerInstances.Select(p => p.body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex)).ToList();
-            Logger.LogMessage($"Run started, there are {playerInstances.Count} player(-s) playing");
-        }
-
-        private void Run_EndStage(On.RoR2.Run.orig_EndStage orig, Run self)
-        {
-            Logger.LogMessage($"Run_EndStage function executed");
-            // save the gathered curse stacks at the end of the run
-            curseStacks = PlayerCharacterMasterController.instances.Select(p => p.body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex)).ToList();
-
-            for (int i = 0; i < curseStacks.Count; i++)
+            try {
+                // initialize curse stacks for each player of this run
+                curseStacks = PlayerCharacterMasterController.instances.Select(p => p.body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex)).ToList();
+                Logger.LogMessage($"Run started, there are {PlayerCharacterMasterController.instances.Count} player(-s) playing");
+            } catch(Exception e)
             {
-                Logger.LogMessage($"Saved {curseStacks[i]} Permanent Curse stacks at end of stage for player {i}");
+                Logger.LogError(e);
+                throw e;
             }
 
-            orig(self);
         }
 
         private void Run_BeginStage(On.RoR2.Run.orig_BeginStage orig, Run self)
@@ -80,13 +53,44 @@ namespace ExamplePlugin
             Logger.LogMessage($"Run_BeginStage function executed");
             orig(self);
 
-
-            for (int i = 0; i < curseStacks.Count; i++)
+            try
             {
-                PlayerCharacterMasterController.instances[i].body.SetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex, curseStacks[i]);
+                for (int i = 0; i < curseStacks.Count; i++)
+                {
+                    PlayerCharacterMasterController.instances[i].body.SetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex, curseStacks[i]);
 
-                Logger.LogMessage($"Set {curseStacks[i]} Permanent Curse stacks at the start of stage for player {i}");
+                    Logger.LogMessage($"Set {curseStacks[i]} Permanent Curse stacks at the start of stage for player {i}");
+                }
             }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+                throw e;
+            }
+        }
+
+        private void Run_AdvanceStage(On.RoR2.Run.orig_AdvanceStage orig, Run self, SceneDef nextScene)
+        {
+            Logger.LogMessage($"Run_AdvanceStage");
+
+
+            try
+            {
+                // save the gathered curse stacks at the end of the run
+                curseStacks = PlayerCharacterMasterController.instances.Select(p => p.body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex)).ToList();
+
+                for (int i = 0; i < curseStacks.Count; i++)
+                {
+                    Logger.LogMessage($"Saved {curseStacks[i]} Permanent Curse stacks at end of stage for player {i}");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+                throw e;
+            }
+
+            orig(self, nextScene);            
         }
     }
 }
