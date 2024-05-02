@@ -17,28 +17,24 @@ namespace ExamplePlugin
         public const string PluginName = "ExamplePlugin";
         public const string PluginVersion = "1.0.0";
 
-        private readonly DebuffPersister persister;
+        private int curseStacks = 0;
 
         public void Awake()
         {
             RoR2.Stage.onStageStartGlobal += Stage_onStageStartGlobal;
+
             On.RoR2.Run.AdvanceStage += Run_AdvanceStage;
         }
 
         private void Stage_onStageStartGlobal(Stage obj)
         {
-            persister.SetStacks(PlayerCharacterMasterController.instances);
-        }
-
-        private void Run_BeginStage(On.RoR2.Run.orig_BeginStage orig, Run self)
-        {
-            orig(self);
-            persister.SetStacks(PlayerCharacterMasterController.instances);
+            var networkCharMaybe = NetworkUser.readOnlyInstancesList[0];
+            networkCharMaybe.GetCurrentBody().SetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex, curseStacks);
         }
 
         private void Run_AdvanceStage(On.RoR2.Run.orig_AdvanceStage orig, Run self, SceneDef nextScene)
         {
-            persister.UpdateStacks(PlayerCharacterMasterController.instances);
+            curseStacks = PlayerCharacterMasterController.instances[0].body.GetBuffCount(RoR2Content.Buffs.PermanentCurse);
             orig(self, nextScene);
         }
     }
