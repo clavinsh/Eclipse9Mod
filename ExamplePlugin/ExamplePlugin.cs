@@ -23,19 +23,32 @@ namespace ExamplePlugin
         {
             RoR2.Stage.onStageStartGlobal += Stage_onStageStartGlobal;
 
-            On.RoR2.Run.AdvanceStage += Run_AdvanceStage;
+            On.RoR2.SceneExitController.SetState += SceneExitController_SetState;
+        }
+
+        private void SceneExitController_SetState(On.RoR2.SceneExitController.orig_SetState orig, SceneExitController self, SceneExitController.ExitState newState)
+        {
+            if (newState == SceneExitController.ExitState.TeleportOut)
+            {
+                var networkCharMaybe = NetworkUser.readOnlyInstancesList[0];
+                curseStacks = networkCharMaybe.GetCurrentBody().GetBuffCount(RoR2Content.Buffs.PermanentCurse);
+            }
+
+            orig(self, newState);
+        }
+
+        private void Stage_BeginAdvanceStage(On.RoR2.Stage.orig_BeginAdvanceStage orig, Stage self, SceneDef destinationStage)
+        {
+            var networkCharMaybe = NetworkUser.readOnlyInstancesList[0];
+            curseStacks = networkCharMaybe.GetCurrentBody().GetBuffCount(RoR2Content.Buffs.PermanentCurse);
+
+            orig(self, destinationStage);
         }
 
         private void Stage_onStageStartGlobal(Stage obj)
         {
             var networkCharMaybe = NetworkUser.readOnlyInstancesList[0];
             networkCharMaybe.GetCurrentBody().SetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex, curseStacks);
-        }
-
-        private void Run_AdvanceStage(On.RoR2.Run.orig_AdvanceStage orig, Run self, SceneDef nextScene)
-        {
-            curseStacks = PlayerCharacterMasterController.instances[0].body.GetBuffCount(RoR2Content.Buffs.PermanentCurse);
-            orig(self, nextScene);
         }
     }
 }
