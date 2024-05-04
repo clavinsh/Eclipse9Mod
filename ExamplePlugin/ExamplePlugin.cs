@@ -15,7 +15,7 @@ namespace ExamplePlugin
         public const string PluginName = "ExamplePlugin";
         public const string PluginVersion = "1.0.0";
 
-        private DeBuffPersister buffPersister;
+        private DeBuffPersister deBuffPersister;
         public static DifficultyIndex Eclipse9;
 
         public void Awake()
@@ -44,9 +44,7 @@ namespace ExamplePlugin
         {
             if (run.selectedDifficulty == Eclipse9)
             {
-                buffPersister = new();
-                RoR2.Stage.onStageStartGlobal += Stage_onStageStartGlobal;
-                On.RoR2.SceneExitController.SetState += SceneExitController_SetState;
+                deBuffPersister = new();
             }
         }
 
@@ -54,28 +52,8 @@ namespace ExamplePlugin
         {
             if (run.selectedDifficulty == Eclipse9)
             {
-                RoR2.Stage.onStageStartGlobal -= Stage_onStageStartGlobal;
-                On.RoR2.SceneExitController.SetState -= SceneExitController_SetState;
+                deBuffPersister.Unsubscribe();
             }
-        }
-
-        private void SceneExitController_SetState(
-            On.RoR2.SceneExitController.orig_SetState orig,
-            SceneExitController self,
-            SceneExitController.ExitState newState
-        )
-        {
-            if (newState == SceneExitController.ExitState.TeleportOut)
-            {
-                buffPersister.GetBuffStacks();
-            }
-
-            orig(self, newState);
-        }
-
-        private void Stage_onStageStartGlobal(Stage obj)
-        {
-            buffPersister.SetBuffStacks();
         }
     }
 }

@@ -6,59 +6,50 @@ namespace ExamplePlugin
 {
     internal class DeBuffPersister
     {
-        private readonly List<int> playersCurseStacks;
-        private readonly int DefaultMaxPlayerCount = 4;
+        // curse stacks will be tied to the specific player,
+        // we can simply tie the stacks (integer), to the player's name (string)
+        readonly Dictionary<string, int> playersCurseStacks;
+
+        readonly BuffDef permanentCurse = RoR2Content.Buffs.PermanentCurse;
 
         public DeBuffPersister()
         {
-            playersCurseStacks = Enumerable.Repeat(0, DefaultMaxPlayerCount).ToList();
+            playersCurseStacks = [];
+            On.RoR2.CharacterBody.RecalculateStats += CharacterBody_RecalculateStats;
         }
 
-        public void GetBuffStacks()
+        private void CharacterBody_RecalculateStats(
+            On.RoR2.CharacterBody.orig_RecalculateStats orig,
+            CharacterBody self
+        )
         {
-            var networkUsers = NetworkUser.readOnlyInstancesList;
-
-            for (int i = 0; i < networkUsers.Count; i++)
+            // when stats are recalculated for a player's body, the username is retrieved and stacks are checked against the dictionary (playersCurseStacks)
+            if (self.isPlayerControlled && self.teamComponent.teamIndex == TeamIndex.Player)
             {
-                int currentCurseStacks = networkUsers[i]
-                    .GetCurrentBody()
-                    .GetBuffCount(RoR2Content.Buffs.PermanentCurse);
+                string name = self.GetUserName();
+                int savedCurseStacks = playersCurseStacks[name];
+                int currentCurseStacks = self.GetBuffCount(permanentCurse);
 
-                if (i >= playersCurseStacks.Count)
+                if (currentCurseStacks < savedCurseStacks)
                 {
-                    playersCurseStacks.Add(currentCurseStacks);
-                }
-                else
-                {
-                    playersCurseStacks[i] = currentCurseStacks;
-                }
-            }
-        }
-
-        public void SetBuffStacks()
-        {
-            var networkUsers = NetworkUser.readOnlyInstancesList;
-
-            for (int i = 0; i < networkUsers.Count; i++)
-            {
-                if (i < playersCurseStacks.Count)
-                {
-                    networkUsers[i]
-                        .GetCurrentBody()
-                        .SetBuffCount(
-                            RoR2Content.Buffs.PermanentCurse.buffIndex,
-                            playersCurseStacks[i]
-                        );
-                }
-                // curse stacks list didn't account for this user
-                else
-                {
-                    Log.Warning(
-                        $"There were more network users ({networkUsers.Count}) than this mod accounted for ({playersCurseStacks.Count}) at the end of the stage"
+                    self.SetBuffCount(
+                        RoR2Content.Buffs.PermanentCurse.buffIndex,
+                        playersCurseStacks[name]
                     );
-                    playersCurseStacks.Add(0);
+                }
+                else if (currentCurseStacks > savedCurseStacks)
+                {
+                    playersCurseStacks[name] = currentCurseStacks;
                 }
             }
+
+            orig(self);
+        }
+
+        public void Unsubscribe()
+        {
+            playersCurseStacks.Clear();
+            On.RoR2.CharacterBody.RecalculateStats -= CharacterBody_RecalculateStats;
         }
     }
 }
