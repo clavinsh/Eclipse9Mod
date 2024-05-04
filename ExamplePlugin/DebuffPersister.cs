@@ -1,26 +1,54 @@
 ﻿using RoR2;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace ExamplePlugin
 {
-    internal class DebuffPersister
+    internal class DeBuffPersister
     {
-        private readonly List<int> playersCurseStacks = [];
+        private readonly List<int> playersCurseStacks;
+        private readonly int DefaultMaxPlayerCount = 4;
 
-        public void UpdateStacks(ReadOnlyCollection<PlayerCharacterMasterController> controllerInstances)
+        public DeBuffPersister()
         {
-            for (int i = 0; i < controllerInstances.Count; i++)
+            playersCurseStacks = [DefaultMaxPlayerCount];
+        }
+
+        public void GetBuffStacks()
+        {
+            var networkUsers = NetworkUser.readOnlyInstancesList;
+
+            for (int i = 0; i < networkUsers.Count; i++)
             {
-                playersCurseStacks[i] = controllerInstances[i].body.GetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex);
+                int currentCurseStacks = networkUsers[i].GetCurrentBody().GetBuffCount(RoR2Content.Buffs.PermanentCurse);
+
+                if (i >= playersCurseStacks.Count)
+                {
+                    playersCurseStacks.Add(currentCurseStacks);
+                }
+                else
+                {
+                    playersCurseStacks[i] = currentCurseStacks;
+                }
             }
         }
 
-        public void SetStacks(ReadOnlyCollection<PlayerCharacterMasterController> controllerInstances)
+        public void SetBuffStacks()
         {
-            for (int i = 0; i < controllerInstances.Count; i++)
+            var networkUsers = NetworkUser.readOnlyInstancesList;
+
+            for (int i = 0; i < networkUsers.Count; i++)
             {
-                PlayerCharacterMasterController.instances[i].body.SetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex, playersCurseStacks[i]);
+                if (i < playersCurseStacks.Count)
+                {
+                    networkUsers[i].GetCurrentBody().SetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex, playersCurseStacks[i]);
+                }
+                // curse stacks list didn't account for this user
+                else
+                {
+                    Log.Warning($"There were more network users ({networkUsers.Count}) than this mod accounted for ({playersCurseStacks.Count}) at the end of the stage");
+                    playersCurseStacks.Add(0);
+                }
+
             }
         }
     }
