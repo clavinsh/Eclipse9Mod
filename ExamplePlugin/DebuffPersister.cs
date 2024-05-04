@@ -8,6 +8,7 @@ namespace ExamplePlugin
     {
         // curse stacks will be tied to the specific player,
         // we can simply tie the stacks (integer), to the player's name (string)
+        // player's name is the simplest unique identifier
         readonly Dictionary<string, int> playersCurseStacks;
 
         readonly BuffDef permanentCurse = RoR2Content.Buffs.PermanentCurse;
@@ -23,11 +24,16 @@ namespace ExamplePlugin
             CharacterBody self
         )
         {
-            // when stats are recalculated for a player's body, the username is retrieved and stacks are checked against the dictionary (playersCurseStacks)
-            if (self.isPlayerControlled && self.teamComponent.teamIndex == TeamIndex.Player)
+            if (self.isPlayerControlled)
             {
+                bool real = PlayerCharacterMasterController.instances.Any(a => a.body.Equals(self));
+
+                //PlayerCharacterMasterController.instances[i].playerControllerId
+
                 string name = self.GetUserName();
-                int savedCurseStacks = playersCurseStacks[name];
+
+                // if no value is found, it gets the default 0, which is fine
+                playersCurseStacks.TryGetValue(name, out int savedCurseStacks);
                 int currentCurseStacks = self.GetBuffCount(permanentCurse);
 
                 if (currentCurseStacks < savedCurseStacks)
