@@ -1,5 +1,6 @@
-﻿using RoR2;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
+using RoR2;
 
 namespace ExamplePlugin
 {
@@ -10,7 +11,7 @@ namespace ExamplePlugin
 
         public DeBuffPersister()
         {
-            playersCurseStacks = [DefaultMaxPlayerCount];
+            playersCurseStacks = Enumerable.Repeat(0, DefaultMaxPlayerCount).ToList();
         }
 
         public void GetBuffStacks()
@@ -19,7 +20,9 @@ namespace ExamplePlugin
 
             for (int i = 0; i < networkUsers.Count; i++)
             {
-                int currentCurseStacks = networkUsers[i].GetCurrentBody().GetBuffCount(RoR2Content.Buffs.PermanentCurse);
+                int currentCurseStacks = networkUsers[i]
+                    .GetCurrentBody()
+                    .GetBuffCount(RoR2Content.Buffs.PermanentCurse);
 
                 if (i >= playersCurseStacks.Count)
                 {
@@ -40,15 +43,21 @@ namespace ExamplePlugin
             {
                 if (i < playersCurseStacks.Count)
                 {
-                    networkUsers[i].GetCurrentBody().SetBuffCount(RoR2Content.Buffs.PermanentCurse.buffIndex, playersCurseStacks[i]);
+                    networkUsers[i]
+                        .GetCurrentBody()
+                        .SetBuffCount(
+                            RoR2Content.Buffs.PermanentCurse.buffIndex,
+                            playersCurseStacks[i]
+                        );
                 }
                 // curse stacks list didn't account for this user
                 else
                 {
-                    Log.Warning($"There were more network users ({networkUsers.Count}) than this mod accounted for ({playersCurseStacks.Count}) at the end of the stage");
+                    Log.Warning(
+                        $"There were more network users ({networkUsers.Count}) than this mod accounted for ({playersCurseStacks.Count}) at the end of the stage"
+                    );
                     playersCurseStacks.Add(0);
                 }
-
             }
         }
     }
