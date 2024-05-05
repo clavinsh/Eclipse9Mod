@@ -3,7 +3,7 @@ using System.Linq;
 using HG;
 using RoR2;
 
-namespace ExamplePlugin
+namespace Eclipse9
 {
     internal class DeBuffPersister
     {
@@ -43,6 +43,7 @@ namespace ExamplePlugin
         private void UpdateStacks(CharacterBody characterBody)
         { 
             string name = characterBody.GetUserName(); // should find a better player identifier than the username
+            var hmm = characterBody.netId;
 
             playersCurseStacks.TryGetValue(name, out int savedCurseStacks);
             int currentCurseStacks = NonInvokingGetBuffCount(characterBody);

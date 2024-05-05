@@ -4,7 +4,7 @@ using RoR2;
 
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
 
-namespace ExamplePlugin
+namespace Eclipse9
 {
     [BepInDependency("com.bepis.r2api")]
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
@@ -21,6 +21,10 @@ namespace ExamplePlugin
         public void Awake()
         {
             Log.Init(Logger);
+
+
+            //EclipseRun.maxEclipseLevel += 1;
+            //DifficultyCatalog.standardDifficultyCount += 1;
 
             DifficultyDef eclipse9def =
                 new(
