@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using HG;
 using RoR2;
 
 namespace ExamplePlugin
@@ -15,6 +16,29 @@ namespace ExamplePlugin
             playersCurseStacks = [];
 
             On.RoR2.CharacterBody.GetBuffCount_BuffDef += CharacterBody_GetBuffCount_BuffDef;
+            On.RoR2.CharacterBody.GetBuffCount_BuffIndex += CharacterBody_GetBuffCount_BuffIndex;
+        }
+        public void Unsubscribe()
+        {
+            playersCurseStacks.Clear();
+            On.RoR2.CharacterBody.GetBuffCount_BuffDef -= CharacterBody_GetBuffCount_BuffDef;
+        }
+
+        private int CharacterBody_GetBuffCount_BuffIndex(On.RoR2.CharacterBody.orig_GetBuffCount_BuffIndex orig, CharacterBody self, BuffIndex buffType)
+        {
+            if(!self.isPlayerControlled)
+            {
+                return orig(self, buffType);
+            }
+
+            if (buffType != permanentCurse.buffIndex)
+            {
+                return orig(self, buffType);
+            }
+
+            UpdateStacks(self);
+
+            return orig(self, buffType);
         }
 
         private int CharacterBody_GetBuffCount_BuffDef(
@@ -33,28 +57,35 @@ namespace ExamplePlugin
                 return orig(self, buffDef);
             }
 
-            string name = self.GetUserName(); // should find a better player identifier than the username
+            UpdateStacks(self);
 
-            // if no value is found, it gets the default 0, which is fine
-            playersCurseStacks.TryGetValue(name, out int savedCurseStacks);
-            int currentCurseStacks = self.GetBuffCount(permanentCurse);
+            return orig(self, buffDef);
+        }
 
+        private void UpdateStacks(CharacterBody characterBody)
+        { 
+            string name = characterBody.GetUserName(); // should find a better player identifier than the username
+
+            playersCurseStacks.TryGetValue(name, out int savedCurseStacks); // if no value is found, it gets the default 0, which is fine
+            int currentCurseStacks = NonInvokingGetBuffCount(characterBody);
+
+            if(currentCurseStacks == savedCurseStacks)
+            {
+                return;
+            }
             if (currentCurseStacks > savedCurseStacks)
             {
                 playersCurseStacks[name] = currentCurseStacks;
             }
             else
             {
-                self.SetBuffCount(permanentCurse.buffIndex, savedCurseStacks);
+                characterBody.SetBuffCount(permanentCurse.buffIndex, savedCurseStacks);
             }
-
-            return orig(self, buffDef);
         }
 
-        public void Unsubscribe()
+        private int NonInvokingGetBuffCount(CharacterBody characterBody)
         {
-            playersCurseStacks.Clear();
-            On.RoR2.CharacterBody.GetBuffCount_BuffDef -= CharacterBody_GetBuffCount_BuffDef;
+            return ArrayUtils.GetSafe<int>(characterBody.buffs, (int)permanentCurse.buffIndex);
         }
     }
 }
