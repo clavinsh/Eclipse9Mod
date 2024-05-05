@@ -15,13 +15,12 @@ namespace ExamplePlugin
         {
             playersCurseStacks = [];
 
-            On.RoR2.CharacterBody.GetBuffCount_BuffDef += CharacterBody_GetBuffCount_BuffDef;
             On.RoR2.CharacterBody.GetBuffCount_BuffIndex += CharacterBody_GetBuffCount_BuffIndex;
         }
         public void Unsubscribe()
         {
             playersCurseStacks.Clear();
-            On.RoR2.CharacterBody.GetBuffCount_BuffDef -= CharacterBody_GetBuffCount_BuffDef;
+            On.RoR2.CharacterBody.GetBuffCount_BuffIndex -= CharacterBody_GetBuffCount_BuffIndex;
         }
 
         private int CharacterBody_GetBuffCount_BuffIndex(On.RoR2.CharacterBody.orig_GetBuffCount_BuffIndex orig, CharacterBody self, BuffIndex buffType)
@@ -41,32 +40,11 @@ namespace ExamplePlugin
             return orig(self, buffType);
         }
 
-        private int CharacterBody_GetBuffCount_BuffDef(
-            On.RoR2.CharacterBody.orig_GetBuffCount_BuffDef orig,
-            CharacterBody self,
-            BuffDef buffDef
-        )
-        {
-            if (!self.isPlayerControlled)
-            {
-                return orig(self, buffDef);
-            }
-
-            if (buffDef != permanentCurse)
-            {
-                return orig(self, buffDef);
-            }
-
-            UpdateStacks(self);
-
-            return orig(self, buffDef);
-        }
-
         private void UpdateStacks(CharacterBody characterBody)
         { 
             string name = characterBody.GetUserName(); // should find a better player identifier than the username
 
-            playersCurseStacks.TryGetValue(name, out int savedCurseStacks); // if no value is found, it gets the default 0, which is fine
+            playersCurseStacks.TryGetValue(name, out int savedCurseStacks);
             int currentCurseStacks = NonInvokingGetBuffCount(characterBody);
 
             if(currentCurseStacks == savedCurseStacks)
