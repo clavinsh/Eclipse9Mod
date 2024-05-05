@@ -8,15 +8,15 @@ namespace ExamplePlugin
 {
     [BepInDependency("com.bepis.r2api")]
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
-    public class ExamplePlugin : BaseUnityPlugin
+    public class Eclipse9 : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "hoozy";
-        public const string PluginName = "ExamplePlugin";
+        public const string PluginName = "Eclipse9";
         public const string PluginVersion = "1.0.0";
 
         private DeBuffPersister deBuffPersister;
-        public static DifficultyIndex Eclipse9;
+        public static DifficultyIndex EclipseNine;
 
         public void Awake()
         {
@@ -33,7 +33,7 @@ namespace ExamplePlugin
                     true // if beaten, unlocks Survivor's Mastery skin
                 );
 
-            Eclipse9 = R2API.DifficultyAPI.AddDifficulty(eclipse9def, true); // true variable (prefer positive) will add eclipse levels
+            EclipseNine = R2API.DifficultyAPI.AddDifficulty(eclipse9def, true); // true variable (prefer positive) will add eclipse levels
 
             RoR2.Run.onRunStartGlobal += Run_onRunStartGlobal;
 
@@ -42,7 +42,7 @@ namespace ExamplePlugin
 
         private void Run_onRunStartGlobal(Run run)
         {
-            if (run.selectedDifficulty == Eclipse9)
+            if (run.selectedDifficulty == EclipseNine)
             {
                 deBuffPersister = new();
             }
@@ -50,7 +50,7 @@ namespace ExamplePlugin
 
         private void Run_onRunDestroyGlobal(Run run)
         {
-            if (run.selectedDifficulty == Eclipse9)
+            if (run.selectedDifficulty == EclipseNine)
             {
                 deBuffPersister.Unsubscribe();
             }
